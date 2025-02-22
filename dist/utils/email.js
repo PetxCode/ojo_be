@@ -26,7 +26,8 @@ const GOOGLE_REDIRECT_URL = process.env.GOOGLE_REDIRECT_URL;
 const GOOGLE_REFRESH = process.env.GOOGLE_REFRESH;
 const oAuth = new googleapis_1.google.auth.OAuth2(GOOGLE_ID, GOOGLE_SECRET, GOOGLE_REDIRECT_URL);
 oAuth.setCredentials({ refresh_token: GOOGLE_REFRESH });
-const url = process.env.APP_URL_DEPLOY;
+// const url: string = process.env.APP_URL_DEPLOY!;
+const url = "https://nurtw-project.web.app";
 let adminUserModel;
 const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
     try {

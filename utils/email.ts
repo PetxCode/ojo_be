@@ -21,7 +21,9 @@ const oAuth = new google.auth.OAuth2(
 
 oAuth.setCredentials({ refresh_token: GOOGLE_REFRESH });
 
-const url: string = process.env.APP_URL_DEPLOY!;
+// const url: string = process.env.APP_URL_DEPLOY!;
+const url: string = "https://nurtw-project.web.app";
+
 let adminUserModel: any;
 
 export const verifiedEmail = async (user: any) => {

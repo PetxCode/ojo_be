@@ -8,10 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dbConfig = void 0;
 const mongoose_1 = require("mongoose");
-const URL = "mongodb://127.0.0.1:27017/transportDB";
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const URL = process.env.MONGO_DB_URL_LOCAL;
 const dbConfig = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield (0, mongoose_1.connect)(URL).then(() => {

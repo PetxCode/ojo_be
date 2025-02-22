@@ -85,7 +85,7 @@ const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, fu
                 accessToken,
             },
         });
-        let url = "http://localhost:5500";
+        let url = "https://nurtw-project.web.app";
         let devURL = `${url}/api/verify-${(_a = member === null || member === void 0 ? void 0 : member.role) === null || _a === void 0 ? void 0 : _a.split(" ")[0].toLowerCase()}-leader/${member._id}`;
         const myPath = path_1.default.join(__dirname, "../views/memberAdded.ejs");
         const html = yield ejs_1.default.renderFile(myPath, {

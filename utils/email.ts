@@ -91,7 +91,7 @@ export const addMemberEmail = async (member: any, getUser: any) => {
         accessToken,
       },
     });
-    let url = "http://localhost:5500";
+    let url = "https://nurtw-project.web.app";
     let devURL: string = `${url}/api/verify-${member?.role
       ?.split(" ")[0]
       .toLowerCase()}-leader/${member._id}`;

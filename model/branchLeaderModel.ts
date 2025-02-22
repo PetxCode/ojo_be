@@ -38,6 +38,37 @@ const branchLeaderModel = new Schema<branchLeaderData>(
     location: {
       type: String,
     },
+    phone: {
+      type: String,
+    },
+    bio: {
+      type: String,
+    },
+
+    branch_units: {
+      type: Number,
+    },
+
+    branch_members: {
+      type: Number,
+    },
+
+    branch_operation: [
+      {
+        type: Types.ObjectId,
+        ref: "branch_operations",
+      },
+    ],
+    best_performing: {
+      type: [],
+    },
+    operation: {
+      type: [],
+    },
+
+    daily_operation: {
+      type: [],
+    },
 
     unitLeader: {
       type: [],

@@ -3,7 +3,7 @@ import multer from "multer";
 import fs from "node:fs";
 import path from "node:path";
 
-let filePath = path.join(__dirname, "../uploads/images");
+let filePath = path.join(__dirname, "./uploads/media");
 
 if (!fs.existsSync(filePath)) {
   fs.mkdir(filePath, () => {

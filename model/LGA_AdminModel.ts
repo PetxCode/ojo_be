@@ -3,6 +3,12 @@ import { LGA_AdminUserData } from "../utils/interfaces";
 
 const adminUserModel = new Schema<LGA_AdminUserData>(
   {
+    phone: {
+      type: String,
+    },
+    bio: {
+      type: String,
+    },
     name: {
       type: String,
     },
@@ -41,6 +47,32 @@ const adminUserModel = new Schema<LGA_AdminUserData>(
     avatarID: {
       type: String,
     },
+
+    lga_branches: {
+      type: Number,
+    },
+
+    lga_units: {
+      type: Number,
+    },
+    best_performing: {
+      type: [],
+    },
+    lga_members: {
+      type: Number,
+    },
+
+    operation: [
+      {
+        type: [],
+      },
+    ],
+
+    daily_operation: [
+      {
+        type: [],
+      },
+    ],
 
     branchLeader: {
       type: [],

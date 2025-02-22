@@ -49,6 +49,13 @@ const memberModel = new Schema<memberData>(
       type: [],
     },
 
+    branchLeaderID: {
+      type: String,
+    },
+    LGALeaderID: {
+      type: String,
+    },
+
     unitLeaderID: {
       type: String,
     },

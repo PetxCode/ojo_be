@@ -35,12 +35,39 @@ const unitLeaderModel = new Schema<unitLeaderData>(
     avatarID: {
       type: String,
     },
+
     branchLeaderID: {
+      type: String,
+    },
+    LGALeaderID: {
       type: String,
     },
 
     location: {
       type: String,
+    },
+
+    unit_members: {
+      type: Number,
+    },
+
+    unit_operation: [
+      {
+        type: Types.ObjectId,
+        ref: "unit_operations",
+      },
+    ],
+
+    daily_operation: {
+      type: [],
+    },
+
+    best_performing: {
+      type: [],
+    },
+
+    operation: {
+      type: [],
     },
 
     member: {

@@ -3,6 +3,13 @@ import { adminUserData } from "../utils/interfaces";
 
 const adminModel = new Schema<adminUserData>(
   {
+    bio: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
+
     name: {
       type: String,
     },
@@ -34,7 +41,9 @@ const adminModel = new Schema<adminUserData>(
     avatarID: {
       type: String,
     },
-
+    best_performing: {
+      type: [],
+    },
     LGA_Admin: {
       type: [],
     },

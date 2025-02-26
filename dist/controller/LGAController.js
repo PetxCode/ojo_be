@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateLGAAvatar = exports.updateLGAProfile = exports.bestPerformingUnitFormLGA = exports.LGADriversOpration = exports.outComeCost = exports.viewLGADetails = exports.viewTotalLGAs = exports.viewLGABranches = exports.viewLGALeaderStatus = exports.updateLGAEmail = exports.verifyLGACreatedByStateAdmin = exports.createLGALeader = exports.loginLGA = void 0;
+exports.updateLGAAvatar = exports.updateLGAProfile = exports.bestPerformingUnitFormLGA = exports.LGADriversOprationNumber = exports.outComeCost = exports.viewLGADetails = exports.viewTotalLGAs = exports.viewLGABranches = exports.viewLGALeaderStatus = exports.updateLGAEmail = exports.verifyLGACreatedByStateAdmin = exports.createLGALeader = exports.loginLGA = void 0;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const adminModel_1 = __importDefault(require("../model/adminModel"));
 const email_1 = require("../utils/email");
@@ -73,18 +73,25 @@ const createLGALeader = (req, res) => __awaiter(void 0, void 0, void 0, function
         const stateAdminData = yield adminModel_1.default.findById(stateAdminID);
         const id = node_crypto_1.default.randomBytes(6).toString("hex");
         if (stateAdminData &&
+            (stateAdminData === null || stateAdminData === void 0 ? void 0 : stateAdminData.email) &&
             (stateAdminData === null || stateAdminData === void 0 ? void 0 : stateAdminData.role) === "admin" &&
             (stateAdminData === null || stateAdminData === void 0 ? void 0 : stateAdminData.verify) === true) {
-            const lgaLeader = yield LGA_AdminModel_1.default.create({
+            const token = jsonwebtoken_1.default.sign({
                 name,
                 adminID: stateAdminID,
                 location,
                 entryID: id,
-            });
-            (0, email_1.addMemberEmail)(lgaLeader, stateAdminData);
+            }, "just");
+            const userData = {
+                name,
+                adminID: stateAdminID,
+                location,
+                entryID: id,
+                role: "LGA Officer",
+            };
+            (0, email_1.addMemberEmail)(userData, stateAdminData, token);
             return res.status(201).json({
                 message: "creating LGA Leader",
-                data: lgaLeader,
                 status: 201,
             });
         }
@@ -105,12 +112,11 @@ const createLGALeader = (req, res) => __awaiter(void 0, void 0, void 0, function
 });
 exports.createLGALeader = createLGALeader;
 const verifyLGACreatedByStateAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const { LGALeaderID } = req.params;
-        const LGALeaderData = yield LGA_AdminModel_1.default.findById(LGALeaderID);
-        const stateAdminData = yield adminModel_1.default.findById(LGALeaderData === null || LGALeaderData === void 0 ? void 0 : LGALeaderData.adminID);
+        const stateAdminData = yield adminModel_1.default.findById((_a = req.body) === null || _a === void 0 ? void 0 : _a.adminID);
         if (stateAdminData) {
-            const stateAdminLGA = yield LGA_AdminModel_1.default.findByIdAndUpdate(LGALeaderID, { verify: true }, { new: true });
+            const stateAdminLGA = yield LGA_AdminModel_1.default.create(req.body);
             stateAdminData.LGA_Admin.push(new mongoose_1.Types.ObjectId(stateAdminLGA === null || stateAdminLGA === void 0 ? void 0 : stateAdminLGA._id));
             stateAdminData === null || stateAdminData === void 0 ? void 0 : stateAdminData.save();
             return res.status(201).json({
@@ -276,27 +282,27 @@ const outComeCost = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.outComeCost = outComeCost;
-const LGADriversOpration = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const LGADriversOprationNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { lgaID } = req.params;
         const unit = yield (LGA_AdminModel_1.default === null || LGA_AdminModel_1.default === void 0 ? void 0 : LGA_AdminModel_1.default.findById(lgaID));
         const x = unit === null || unit === void 0 ? void 0 : unit.operation;
-        const operation = lodash_1.default.groupBy(x, (item) => {
+        const operation = lodash_1.default.groupBy(x === null || x === void 0 ? void 0 : x.flat(), (item) => {
             return (0, moment_1.default)(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM-DD");
         });
         const opt = Object.fromEntries(Object.entries(operation).sort((a, b) => a - b));
         let operate = [];
         for (let i of Object.keys(opt)) {
-            console.log([`${i}`]);
             let x = lodash_1.default.size(operation[`${i}`]);
-            console.log("reading: ", x);
-            operate.push(x);
+            // operate.push(x);
+            operate = [...operate, x];
         }
         let option = yield (LGA_AdminModel_1.default === null || LGA_AdminModel_1.default === void 0 ? void 0 : LGA_AdminModel_1.default.findByIdAndUpdate(lgaID, {
             daily_operation: operate,
         }, { new: true }));
         return res.status(200).json({
             message: "viewing unit Officer record",
+            // data: operate,
             data: option === null || option === void 0 ? void 0 : option.daily_operation,
             status: 200,
         });
@@ -308,7 +314,7 @@ const LGADriversOpration = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
     }
 });
-exports.LGADriversOpration = LGADriversOpration;
+exports.LGADriversOprationNumber = LGADriversOprationNumber;
 const bestPerformingUnitFormLGA = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { branchID, LGAID } = req.params;
@@ -352,12 +358,13 @@ exports.bestPerformingUnitFormLGA = bestPerformingUnitFormLGA;
 const updateLGAProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { phone, bio, name } = req.body;
-        console.log(id);
+        const { phone, bio, name, email } = req.body;
+        console.log(phone, bio, name, email);
         const stateAdminLGA = yield LGA_AdminModel_1.default.findByIdAndUpdate(id, {
             phone,
             bio,
             name,
+            email,
         }, { new: true });
         return res.status(200).json({
             message: "viewing stateAdminLGA record",

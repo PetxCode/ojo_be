@@ -14,6 +14,7 @@ import _ from "lodash";
 import cloudinary from "../utils/cloudinary";
 import branchLeaderModel from "../model/branchLeaderModel";
 import unitLeaderModel from "../model/unitLeaderModel";
+import { request } from "node:http";
 env.config();
 
 export const loginLGA = async (
@@ -72,21 +73,33 @@ export const createLGALeader = async (
 
     if (
       stateAdminData &&
+      stateAdminData?.email &&
       stateAdminData?.role === "admin" &&
       stateAdminData?.verify === true
     ) {
-      const lgaLeader = await LGA_AdminModel.create({
+      const token = jwt.sign(
+        {
+          name,
+          adminID: stateAdminID,
+          location,
+          entryID: id,
+        },
+        "just"
+      );
+
+      const userData = {
         name,
         adminID: stateAdminID,
         location,
         entryID: id,
-      });
+        role: "LGA Officer",
+      };
 
-      addMemberEmail(lgaLeader, stateAdminData);
+      addMemberEmail(userData, stateAdminData, token);
 
       return res.status(201).json({
         message: "creating LGA Leader",
-        data: lgaLeader,
+
         status: 201,
       });
     } else {
@@ -109,18 +122,10 @@ export const verifyLGACreatedByStateAdmin = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { LGALeaderID } = req.params;
-
-    const LGALeaderData: any = await LGA_AdminModel.findById(LGALeaderID);
-
-    const stateAdminData = await adminModel.findById(LGALeaderData?.adminID);
+    const stateAdminData = await adminModel.findById(req.body?.adminID);
 
     if (stateAdminData) {
-      const stateAdminLGA: any = await LGA_AdminModel.findByIdAndUpdate(
-        LGALeaderID,
-        { verify: true },
-        { new: true }
-      );
+      const stateAdminLGA: any = await LGA_AdminModel.create(req.body);
 
       stateAdminData.LGA_Admin.push(new Types.ObjectId(stateAdminLGA?._id!));
       stateAdminData?.save();
@@ -322,14 +327,14 @@ export const outComeCost = async (req: Request, res: Response) => {
   }
 };
 
-export const LGADriversOpration = async (req: Request, res: Response) => {
+export const LGADriversOprationNumber = async (req: Request, res: Response) => {
   try {
     const { lgaID } = req.params;
     const unit = await LGA_AdminModel?.findById(lgaID);
 
     const x = unit?.operation;
 
-    const operation = _.groupBy(x, (item: any) => {
+    const operation = _.groupBy(x?.flat(), (item: any) => {
       return moment(item.time, "dddd, MMMM D, YYYY h:mm A").format(
         "YYYY-MM-DD"
       );
@@ -339,13 +344,12 @@ export const LGADriversOpration = async (req: Request, res: Response) => {
       Object.entries(operation).sort((a: any, b: any) => a - b)
     );
 
-    let operate = [];
+    let operate: any = [];
 
     for (let i of Object.keys(opt)) {
-      console.log([`${i}`]);
       let x = _.size(operation[`${i}`]);
-      console.log("reading: ", x);
-      operate.push(x);
+      // operate.push(x);
+      operate = [...operate, x];
     }
 
     let option = await LGA_AdminModel?.findByIdAndUpdate(
@@ -358,6 +362,7 @@ export const LGADriversOpration = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "viewing unit Officer record",
+      // data: operate,
       data: option?.daily_operation,
       status: 200,
     });
@@ -432,9 +437,9 @@ export const updateLGAProfile = async (
 ): Promise<Response> => {
   try {
     const { id } = req.params;
-    const { phone, bio, name } = req.body;
+    const { phone, bio, name, email } = req.body;
 
-    console.log(id);
+    console.log(phone, bio, name, email);
 
     const stateAdminLGA = await LGA_AdminModel.findByIdAndUpdate(
       id,
@@ -442,6 +447,7 @@ export const updateLGAProfile = async (
         phone,
         bio,
         name,
+        email,
       },
       { new: true }
     );

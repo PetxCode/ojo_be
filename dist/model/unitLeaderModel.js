@@ -2,6 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const unitLeaderModel = new mongoose_1.Schema({
+    bio: {
+        type: String,
+    },
+    phone: {
+        type: String,
+    },
     name: {
         type: String,
     },
@@ -61,7 +67,12 @@ const unitLeaderModel = new mongoose_1.Schema({
         type: [],
     },
     member: {
-        type: [],
+        type: [
+            {
+                type: mongoose_1.Types.ObjectId,
+                ref: "members",
+            },
+        ],
     },
     branchLeader: {
         type: mongoose_1.Types.ObjectId,

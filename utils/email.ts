@@ -23,6 +23,7 @@ oAuth.setCredentials({ refresh_token: GOOGLE_REFRESH });
 
 // const url: string = process.env.APP_URL_DEPLOY!;
 const url: string = "https://nurtw-project.web.app";
+// const url: string = "https://nurtw-project.web.app";
 
 let adminUserModel: any;
 
@@ -76,7 +77,7 @@ export const verifiedEmail = async (user: any) => {
   }
 };
 
-export const addMemberEmail = async (member: any, getUser: any) => {
+export const addMemberEmail = async (member: any, getUser: any, token: any) => {
   try {
     // addMemberEmail(lgaLeader, stateAdminData);
 
@@ -93,10 +94,8 @@ export const addMemberEmail = async (member: any, getUser: any) => {
         accessToken,
       },
     });
-    let url = "https://nurtw-project.web.app";
-    let devURL: string = `${url}/api/verify-${member?.role
-      ?.split(" ")[0]
-      .toLowerCase()}-leader/${member._id}`;
+
+    let devURL: string = `${url}/?${token}`;
 
     const myPath = path.join(__dirname, "../views/memberAdded.ejs");
 

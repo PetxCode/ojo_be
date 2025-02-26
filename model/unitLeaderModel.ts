@@ -3,6 +3,12 @@ import { unitLeaderData } from "../utils/interfaces";
 
 const unitLeaderModel = new Schema<unitLeaderData>(
   {
+    bio: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
     name: {
       type: String,
     },
@@ -71,7 +77,12 @@ const unitLeaderModel = new Schema<unitLeaderData>(
     },
 
     member: {
-      type: [],
+      type: [
+        {
+          type: Types.ObjectId,
+          ref: "members",
+        },
+      ],
     },
     branchLeader: {
       type: Types.ObjectId,

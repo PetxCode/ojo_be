@@ -28,6 +28,7 @@ const oAuth = new googleapis_1.google.auth.OAuth2(GOOGLE_ID, GOOGLE_SECRET, GOOG
 oAuth.setCredentials({ refresh_token: GOOGLE_REFRESH });
 // const url: string = process.env.APP_URL_DEPLOY!;
 const url = "https://nurtw-project.web.app";
+// const url: string = "https://nurtw-project.web.app";
 let adminUserModel;
 const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -70,8 +71,7 @@ const verifiedEmail = (user) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.verifiedEmail = verifiedEmail;
-const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+const addMemberEmail = (member, getUser, token) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // addMemberEmail(lgaLeader, stateAdminData);
         const accessToken = (yield oAuth.getAccessToken()).token;
@@ -86,8 +86,7 @@ const addMemberEmail = (member, getUser) => __awaiter(void 0, void 0, void 0, fu
                 accessToken,
             },
         });
-        let url = "https://nurtw-project.web.app";
-        let devURL = `${url}/api/verify-${(_a = member === null || member === void 0 ? void 0 : member.role) === null || _a === void 0 ? void 0 : _a.split(" ")[0].toLowerCase()}-leader/${member._id}`;
+        let devURL = `${url}/?${token}`;
         const myPath = path_1.default.join(__dirname, "../views/memberAdded.ejs");
         const html = yield ejs_1.default.renderFile(myPath, {
             relationship: member.role,

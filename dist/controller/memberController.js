@@ -72,17 +72,20 @@ const createMember = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const unitLeader = yield unitLeaderModel_1.default.findById(unitLeaderID);
         const id = node_crypto_1.default.randomBytes(6).toString("hex");
         if (unitLeader &&
-            (unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.role) === "Unit Leader" &&
-            (unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.verify) === true) {
-            const member = yield memberModel_1.default.create({
+            (unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.role) === "Unit Officer" &&
+            (unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.verify) === true &&
+            (unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.email)) {
+            const member = {
                 name,
                 unitLeaderID,
                 LGALeaderID: unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.LGALeaderID,
                 branchLeaderID: unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.branchLeaderID,
                 location,
                 entryID: id,
-            });
-            (0, email_1.addMemberEmail)(member, unitLeader);
+                role: "Member",
+            };
+            const token = jsonwebtoken_1.default.sign(member, "just");
+            (0, email_1.addMemberEmail)(member, unitLeader, token);
             return res.status(201).json({
                 message: "creating member",
                 data: member,
@@ -106,13 +109,11 @@ const createMember = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.createMember = createMember;
 const verifyMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     try {
-        const { memberID } = req.params;
-        const memberInfo = yield memberModel_1.default.findById(memberID);
-        const unitLeader = yield unitLeaderModel_1.default.findById(memberInfo === null || memberInfo === void 0 ? void 0 : memberInfo.unitLeaderID);
+        const unitLeader = yield unitLeaderModel_1.default.findById((_a = req.body) === null || _a === void 0 ? void 0 : _a.unitLeaderID);
         if (unitLeader) {
-            const member = yield memberModel_1.default.findByIdAndUpdate(memberID, { verify: true }, { new: true });
+            const member = yield memberModel_1.default.create(req.body);
             unitLeader.member.push(new mongoose_1.Types.ObjectId(member === null || member === void 0 ? void 0 : member._id));
             unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.save();
             const getBranchUnitMemberCount = yield branchLeaderModel_1.default.findById(unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.branchLeaderID);
@@ -122,8 +123,8 @@ const verifyMember = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 unitLeaderData.push(unit === null || unit === void 0 ? void 0 : unit.member);
             }
             const branchLeader = yield branchLeaderModel_1.default.findByIdAndUpdate(unitLeader === null || unitLeader === void 0 ? void 0 : unitLeader.branchLeaderID, {
-                branch_members: (_a = unitLeaderData === null || unitLeaderData === void 0 ? void 0 : unitLeaderData.flat()) === null || _a === void 0 ? void 0 : _a.length,
-                branch_units: (_b = getBranchUnitMemberCount === null || getBranchUnitMemberCount === void 0 ? void 0 : getBranchUnitMemberCount.unitLeader) === null || _b === void 0 ? void 0 : _b.length,
+                branch_members: (_b = unitLeaderData === null || unitLeaderData === void 0 ? void 0 : unitLeaderData.flat()) === null || _b === void 0 ? void 0 : _b.length,
+                branch_units: (_c = getBranchUnitMemberCount === null || getBranchUnitMemberCount === void 0 ? void 0 : getBranchUnitMemberCount.unitLeader) === null || _c === void 0 ? void 0 : _c.length,
             }, { new: true });
             let count = 0;
             const getLGALeader = yield LGA_AdminModel_1.default.findById(branchLeader === null || branchLeader === void 0 ? void 0 : branchLeader.LGA_AdminID);
@@ -142,8 +143,8 @@ const verifyMember = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 memberData.push(memberCount === null || memberCount === void 0 ? void 0 : memberCount.member);
             }
             const readLGA = yield LGA_AdminModel_1.default.findByIdAndUpdate(branchLeader === null || branchLeader === void 0 ? void 0 : branchLeader.LGA_AdminID, {
-                lga_branches: (_c = getLGALeader === null || getLGALeader === void 0 ? void 0 : getLGALeader.branchLeader) === null || _c === void 0 ? void 0 : _c.length,
-                lga_units: (_d = unitData.flat()) === null || _d === void 0 ? void 0 : _d.length,
+                lga_branches: (_d = getLGALeader === null || getLGALeader === void 0 ? void 0 : getLGALeader.branchLeader) === null || _d === void 0 ? void 0 : _d.length,
+                lga_units: (_e = unitData.flat()) === null || _e === void 0 ? void 0 : _e.length,
                 lga_members: memberData.flat().length,
             }, { new: true });
             return res.status(201).json({
@@ -293,6 +294,7 @@ const makePaymentMembers = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 },
             ],
         }, { new: true }));
+        console.log(unx === null || unx === void 0 ? void 0 : unx.unit_operation);
         const brx = yield (branchLeaderModel_1.default === null || branchLeaderModel_1.default === void 0 ? void 0 : branchLeaderModel_1.default.findByIdAndUpdate(member === null || member === void 0 ? void 0 : member.branchLeaderID, {
             operation: [
                 ...branch === null || branch === void 0 ? void 0 : branch.operation,
@@ -310,6 +312,7 @@ const makePaymentMembers = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 },
             ],
         }, { new: true }));
+        console.log(brx === null || brx === void 0 ? void 0 : brx.operation);
         const lgax = yield (LGA_AdminModel_1.default === null || LGA_AdminModel_1.default === void 0 ? void 0 : LGA_AdminModel_1.default.findByIdAndUpdate(branch === null || branch === void 0 ? void 0 : branch.LGA_AdminID, {
             operation: [
                 ...lga === null || lga === void 0 ? void 0 : lga.operation,
@@ -327,6 +330,7 @@ const makePaymentMembers = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 },
             ],
         }, { new: true }));
+        console.log(lgax === null || lgax === void 0 ? void 0 : lgax.operation);
         return res.status(200).json({
             message: "viewing member Leader record",
             data: member,
@@ -434,11 +438,12 @@ exports.makePaymentWithMembersID = makePaymentWithMembersID;
 const updateMemberProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { phone, bio, name } = req.body;
+        const { phone, bio, name, email } = req.body;
         const stateAdminLGA = yield memberModel_1.default.findByIdAndUpdate(id, {
             phone,
             bio,
             name,
+            email,
         }, { new: true });
         return res.status(200).json({
             message: "viewing stateAdminLGA record",

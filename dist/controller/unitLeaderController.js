@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.viewUnitLeaderStatus = exports.updateUnitAvatar = exports.updateUnitProfile = exports.driversOpration = exports.outComeCost = exports.viewTotalUnit = exports.viewBranchesLeaderUnit = exports.viewBranchLeaderStatus = exports.updateUnitLeaderEmail = exports.verifyUnitLeader = exports.createUnitLeader = exports.loginUnit = void 0;
+exports.viewUnitLeaderMembers = exports.viewUnitLeaderStatus = exports.updateUnitAvatar = exports.updateUnitProfile = exports.driversOpration = exports.outComeCost = exports.viewTotalUnit = exports.viewBranchesLeaderUnit = exports.viewBranchLeaderStatus = exports.updateUnitLeaderEmail = exports.verifyUnitLeader = exports.createUnitLeader = exports.loginUnit = void 0;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const email_1 = require("../utils/email");
 const mongoose_1 = require("mongoose");
@@ -72,16 +72,19 @@ const createUnitLeader = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const branchLeader = yield branchLeaderModel_1.default.findById(branchLeaderID);
         const id = node_crypto_1.default.randomBytes(6).toString("hex");
         if (branchLeader &&
+            (branchLeader === null || branchLeader === void 0 ? void 0 : branchLeader.email) &&
             (branchLeader === null || branchLeader === void 0 ? void 0 : branchLeader.role) === "Branch Leader" &&
             (branchLeader === null || branchLeader === void 0 ? void 0 : branchLeader.verify) === true) {
-            const unitLeader = yield unitLeaderModel_1.default.create({
+            const unitLeader = {
                 name,
+                role: "Unit Officer",
                 branchLeaderID,
                 LGALeaderID: branchLeader === null || branchLeader === void 0 ? void 0 : branchLeader.LGALeaderID,
                 location,
                 entryID: id,
-            });
-            (0, email_1.addMemberEmail)(unitLeader, branchLeader);
+            };
+            const token = jsonwebtoken_1.default.sign(unitLeader, "just");
+            (0, email_1.addMemberEmail)(unitLeader, branchLeader, token);
             return res.status(201).json({
                 message: "creating unit Leader",
                 data: unitLeader,
@@ -105,12 +108,11 @@ const createUnitLeader = (req, res) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.createUnitLeader = createUnitLeader;
 const verifyUnitLeader = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const { unitLeaderID } = req.params;
-        const unitLeaderData = yield unitLeaderModel_1.default.findById(unitLeaderID);
-        const branchLeader = yield branchLeaderModel_1.default.findById(unitLeaderData === null || unitLeaderData === void 0 ? void 0 : unitLeaderData.branchLeaderID);
+        const branchLeader = yield branchLeaderModel_1.default.findById((_a = req.body) === null || _a === void 0 ? void 0 : _a.branchLeaderID);
         if (branchLeader) {
-            const stateAdminLGA = yield unitLeaderModel_1.default.findByIdAndUpdate(unitLeaderID, { verify: true }, { new: true });
+            const stateAdminLGA = yield unitLeaderModel_1.default.create(req.body);
             branchLeader.unitLeader.push(new mongoose_1.Types.ObjectId(stateAdminLGA === null || stateAdminLGA === void 0 ? void 0 : stateAdminLGA._id));
             branchLeader === null || branchLeader === void 0 ? void 0 : branchLeader.save();
             let unitCount = [];
@@ -298,11 +300,12 @@ exports.driversOpration = driversOpration;
 const updateUnitProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { phone, bio, name } = req.body;
+        const { phone, bio, name, email } = req.body;
         const stateAdminLGA = yield unitLeaderModel_1.default.findByIdAndUpdate(id, {
             phone,
             bio,
             name,
+            email,
         }, { new: true });
         return res.status(200).json({
             message: "viewing stateAdminLGA record",
@@ -376,3 +379,23 @@ const viewUnitLeaderStatus = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.viewUnitLeaderStatus = viewUnitLeaderStatus;
+const viewUnitLeaderMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { unitID } = req.params;
+        const unit = yield unitLeaderModel_1.default
+            .findById(unitID)
+            .populate("member")
+            .exec();
+        return res.status(200).json({
+            message: "viewing unit record",
+            data: unit,
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error verifying LGALeader",
+        });
+    }
+});
+exports.viewUnitLeaderMembers = viewUnitLeaderMembers;

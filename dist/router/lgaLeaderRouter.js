@@ -7,12 +7,10 @@ const router = (0, express_1.Router)();
 router.route("/create-lga-leader/:stateAdminID").post(LGAController_1.createLGALeader);
 router.route("/login").post(LGAController_1.loginLGA);
 router.route("/all-lgas").get(LGAController_1.viewTotalLGAs);
-router
-    .route("/verify-lga-leader/:LGALeaderID")
-    .get(LGAController_1.verifyLGACreatedByStateAdmin);
+router.route("/verify-lga-leader").post(LGAController_1.verifyLGACreatedByStateAdmin);
 router.route("/update-lga-email/:LGALeaderID").patch(LGAController_1.updateLGAEmail);
 router.route("/lga-cost-outcome/:lgaID").get(LGAController_1.outComeCost);
-router.route("/lga-driver-operation/:lgaID").get(LGAController_1.LGADriversOpration);
+router.route("/lga-driver-operation/:lgaID").get(LGAController_1.LGADriversOprationNumber);
 router.route("/best-performing-lga-unit/:LGAID").get(LGAController_1.bestPerformingUnitFormLGA);
 router.route("/view-lga-leader-status/:LGALeaderID").get(LGAController_1.viewLGALeaderStatus);
 router.route("/view-lga-leader-branch/:LGALeaderID").get(LGAController_1.viewLGABranches);

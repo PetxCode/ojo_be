@@ -6,6 +6,12 @@ const memberModel = new Schema<memberData>(
     name: {
       type: String,
     },
+    bio: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
     email: {
       type: String,
     },
@@ -59,6 +65,7 @@ const memberModel = new Schema<memberData>(
     unitLeaderID: {
       type: String,
     },
+
     unitLeader: {
       type: Types.ObjectId,
       ref: "unitLeaders",

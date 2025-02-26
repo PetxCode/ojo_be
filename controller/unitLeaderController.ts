@@ -72,20 +72,23 @@ export const createUnitLeader = async (
 
     if (
       branchLeader &&
+      branchLeader?.email &&
       branchLeader?.role === "Branch Leader" &&
       branchLeader?.verify === true
     ) {
-      const unitLeader = await unitLeaderModel.create({
+      const unitLeader = {
         name,
-
+        role: "Unit Officer",
         branchLeaderID,
         LGALeaderID: branchLeader?.LGALeaderID,
 
         location,
         entryID: id,
-      });
+      };
 
-      addMemberEmail(unitLeader, branchLeader);
+      const token = jwt.sign(unitLeader, "just");
+
+      addMemberEmail(unitLeader, branchLeader, token);
 
       return res.status(201).json({
         message: "creating unit Leader",
@@ -112,20 +115,12 @@ export const verifyUnitLeader = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { unitLeaderID } = req.params;
-
-    const unitLeaderData: any = await unitLeaderModel.findById(unitLeaderID);
-
     const branchLeader: any = await branchLeaderModel.findById(
-      unitLeaderData?.branchLeaderID
+      req.body?.branchLeaderID
     );
 
     if (branchLeader) {
-      const stateAdminLGA: any = await unitLeaderModel.findByIdAndUpdate(
-        unitLeaderID,
-        { verify: true },
-        { new: true }
-      );
+      const stateAdminLGA: any = await unitLeaderModel.create(req.body);
 
       branchLeader.unitLeader.push(new Types.ObjectId(stateAdminLGA?._id!));
       branchLeader?.save();
@@ -367,7 +362,7 @@ export const updateUnitProfile = async (
 ): Promise<Response> => {
   try {
     const { id } = req.params;
-    const { phone, bio, name } = req.body;
+    const { phone, bio, name, email } = req.body;
 
     const stateAdminLGA = await unitLeaderModel.findByIdAndUpdate(
       id,
@@ -375,6 +370,7 @@ export const updateUnitProfile = async (
         phone,
         bio,
         name,
+        email,
       },
       { new: true }
     );
@@ -458,6 +454,30 @@ export const viewUnitLeaderStatus = async (
     return res.status(200).json({
       message: "viewing LGALeader record",
       data: LGALeader,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error verifying LGALeader",
+    });
+  }
+};
+
+export const viewUnitLeaderMembers = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { unitID } = req.params;
+
+    const unit = await unitLeaderModel
+      .findById(unitID)
+      .populate("member")
+      .exec();
+
+    return res.status(200).json({
+      message: "viewing unit record",
+      data: unit,
       status: 200,
     });
   } catch (error) {

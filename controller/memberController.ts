@@ -72,19 +72,23 @@ export const createMember = async (
 
     if (
       unitLeader &&
-      unitLeader?.role === "Unit Leader" &&
-      unitLeader?.verify === true
+      unitLeader?.role === "Unit Officer" &&
+      unitLeader?.verify === true &&
+      unitLeader?.email
     ) {
-      const member = await memberModel.create({
+      const member = {
         name,
         unitLeaderID,
         LGALeaderID: unitLeader?.LGALeaderID,
         branchLeaderID: unitLeader?.branchLeaderID,
         location,
         entryID: id,
-      });
+        role: "Member",
+      };
 
-      addMemberEmail(member, unitLeader);
+      const token = jwt.sign(member, "just");
+
+      addMemberEmail(member, unitLeader, token);
 
       return res.status(201).json({
         message: "creating member",
@@ -111,18 +115,10 @@ export const verifyMember = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { memberID } = req.params;
-
-    const memberInfo: any = await memberModel.findById(memberID);
-
-    const unitLeader = await unitLeaderModel.findById(memberInfo?.unitLeaderID);
+    const unitLeader = await unitLeaderModel.findById(req.body?.unitLeaderID);
 
     if (unitLeader) {
-      const member: any = await memberModel.findByIdAndUpdate(
-        memberID,
-        { verify: true },
-        { new: true }
-      );
+      const member: any = await memberModel.create(req.body);
 
       unitLeader.member.push(new Types.ObjectId(member?._id!));
       unitLeader?.save();
@@ -362,6 +358,8 @@ export const makePaymentMembers = async (req: Request, res: Response) => {
       { new: true }
     );
 
+    console.log(unx?.unit_operation);
+
     const brx = await branchLeaderModel?.findByIdAndUpdate(
       member?.branchLeaderID,
       {
@@ -384,6 +382,8 @@ export const makePaymentMembers = async (req: Request, res: Response) => {
       { new: true }
     );
 
+    console.log(brx?.operation);
+
     const lgax = await LGA_AdminModel?.findByIdAndUpdate(
       branch?.LGA_AdminID,
       {
@@ -405,6 +405,8 @@ export const makePaymentMembers = async (req: Request, res: Response) => {
       },
       { new: true }
     );
+
+    console.log(lgax?.operation);
 
     return res.status(200).json({
       message: "viewing member Leader record",
@@ -539,7 +541,7 @@ export const updateMemberProfile = async (
 ): Promise<Response> => {
   try {
     const { id } = req.params;
-    const { phone, bio, name } = req.body;
+    const { phone, bio, name, email } = req.body;
 
     const stateAdminLGA = await memberModel.findByIdAndUpdate(
       id,
@@ -547,6 +549,7 @@ export const updateMemberProfile = async (
         phone,
         bio,
         name,
+        email,
       },
       { new: true }
     );

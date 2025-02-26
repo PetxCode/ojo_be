@@ -8,6 +8,7 @@ import {
   bestPerformingUnitFromAmdn,
   updateAdminProfile,
   updateUserAvatar,
+  monthlyPerformance,
 } from "../controller/adminController";
 import { fileUpload } from "../utils/multer";
 
@@ -23,6 +24,8 @@ router.route("/verify-admin/:stateAdminID").get(verifyStateAdmin);
 router
   .route("/best-performing-admin-unit/:adminID")
   .get(bestPerformingUnitFromAmdn);
+
+router.route("/monthly-performance/:adminID").get(monthlyPerformance);
 
 router.route("/view-admin-status/:stateAdminID").get(viewStateAdminStatus);
 router.route("/view-admin-lga/:stateAdminID").get(viewStateAdminViewLGA);

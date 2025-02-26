@@ -12,6 +12,7 @@ router.route("/verify-admin/:stateAdminID").get(adminController_1.verifyStateAdm
 router
     .route("/best-performing-admin-unit/:adminID")
     .get(adminController_1.bestPerformingUnitFromAmdn);
+router.route("/monthly-performance/:adminID").get(adminController_1.monthlyPerformance);
 router.route("/view-admin-status/:stateAdminID").get(adminController_1.viewStateAdminStatus);
 router.route("/view-admin-lga/:stateAdminID").get(adminController_1.viewStateAdminViewLGA);
 exports.default = router;

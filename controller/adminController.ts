@@ -315,7 +315,7 @@ export const updateAdminProfile = async (
 ): Promise<Response> => {
   try {
     const { stateAdminID } = req.params;
-    const { phone, bio, name } = req.body;
+    const { phone, bio, name, email } = req.body;
 
     const stateAdminLGA = await adminModel.findByIdAndUpdate(
       stateAdminID,
@@ -323,6 +323,7 @@ export const updateAdminProfile = async (
         phone,
         bio,
         name,
+        email,
       },
       { new: true }
     );
@@ -383,6 +384,31 @@ export const updateUserAvatar = async (req: any, res: Response) => {
         .status(400) // Changed to 400 for a more appropriate error status
         .json({ message: "deos not exist" });
     }
+  } catch (error: any) {
+    return res
+      .status(400) // Changed to 400 for a more appropriate error status
+      .json({ message: "User not update", error: error.message });
+  }
+};
+
+export const monthlyPerformance = async (req: any, res: Response) => {
+  try {
+    const { adminID } = req.params;
+
+    const getUser: any = await adminModel.findById(adminID).populate({
+      path: "LGA_Admin",
+    });
+
+    for (let i of getUser?.LGA_Admin) {
+      const LGA: any = await LGA_AdminModel.findById(i);
+      console.log(LGA);
+    }
+
+    return res.status(201).json({
+      message: "User update successfully",
+      data: getUser,
+      status: 201,
+    });
   } catch (error: any) {
     return res
       .status(400) // Changed to 400 for a more appropriate error status

@@ -71,17 +71,24 @@ export const createBranchLeader = async (
 
     if (
       LGALeader &&
+      LGALeader?.email &&
       LGALeader?.role === "LGA Admin" &&
       LGALeader?.verify === true
     ) {
-      const branchLeader = await branchLeaderModel.create({
+      const branchLeader = {
         name,
         LGA_AdminID: LGALeaderID,
         location,
         entryID: id,
-      });
+        role: "Branch Officer",
+      };
 
-      addMemberEmail(branchLeader, LGALeader);
+      const token = jwt.sign(
+        { name, LGA_AdminID: LGALeaderID, location, entryID: id },
+        "just"
+      );
+
+      addMemberEmail(branchLeader, LGALeader, token);
 
       LGA_AdminModel.findByIdAndUpdate(
         LGALeaderID,
@@ -116,18 +123,10 @@ export const verifyBranchLeader = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { branchLeaderID } = req.params;
-
-    const LGALeaderData: any = await branchLeaderModel.findById(branchLeaderID);
-
-    const LGALeader = await LGA_AdminModel.findById(LGALeaderData?.LGA_AdminID);
+    const LGALeader = await LGA_AdminModel.findById(req.body?.LGA_AdminID);
 
     if (LGALeader) {
-      const stateAdminLGA: any = await branchLeaderModel.findByIdAndUpdate(
-        branchLeaderID,
-        { verify: true },
-        { new: true }
-      );
+      const stateAdminLGA: any = await branchLeaderModel.create(req.body);
 
       LGALeader.branchLeader.push(new Types.ObjectId(stateAdminLGA?._id!));
       LGALeader?.save();
@@ -194,8 +193,6 @@ export const viewBranchLeaderStatus = async (
     const { branchLeaderID } = req.params;
 
     const branchLeader = await branchLeaderModel.findById(branchLeaderID);
-
-  
 
     return res.status(200).json({
       message: "viewing Branch Leader record",
@@ -402,7 +399,7 @@ export const updateBranchProfile = async (
 ): Promise<Response> => {
   try {
     const { id } = req.params;
-    const { phone, bio, name } = req.body;
+    const { phone, bio, name, email } = req.body;
 
     const stateAdminLGA = await branchLeaderModel.findByIdAndUpdate(
       id,
@@ -410,6 +407,7 @@ export const updateBranchProfile = async (
         phone,
         bio,
         name,
+        email,
       },
       { new: true }
     );

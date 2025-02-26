@@ -72,15 +72,18 @@ const createBranchLeader = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const LGALeader = yield LGA_AdminModel_1.default.findById(LGALeaderID);
         const id = node_crypto_1.default.randomBytes(6).toString("hex");
         if (LGALeader &&
+            (LGALeader === null || LGALeader === void 0 ? void 0 : LGALeader.email) &&
             (LGALeader === null || LGALeader === void 0 ? void 0 : LGALeader.role) === "LGA Admin" &&
             (LGALeader === null || LGALeader === void 0 ? void 0 : LGALeader.verify) === true) {
-            const branchLeader = yield branchLeaderModel_1.default.create({
+            const branchLeader = {
                 name,
                 LGA_AdminID: LGALeaderID,
                 location,
                 entryID: id,
-            });
-            (0, email_1.addMemberEmail)(branchLeader, LGALeader);
+                role: "Branch Officer",
+            };
+            const token = jsonwebtoken_1.default.sign({ name, LGA_AdminID: LGALeaderID, location, entryID: id }, "just");
+            (0, email_1.addMemberEmail)(branchLeader, LGALeader, token);
             LGA_AdminModel_1.default.findByIdAndUpdate(LGALeaderID, {
                 lga_branches: (LGALeader === null || LGALeader === void 0 ? void 0 : LGALeader.lga_branches) + 1,
             }, { new: true });
@@ -107,12 +110,11 @@ const createBranchLeader = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.createBranchLeader = createBranchLeader;
 const verifyBranchLeader = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const { branchLeaderID } = req.params;
-        const LGALeaderData = yield branchLeaderModel_1.default.findById(branchLeaderID);
-        const LGALeader = yield LGA_AdminModel_1.default.findById(LGALeaderData === null || LGALeaderData === void 0 ? void 0 : LGALeaderData.LGA_AdminID);
+        const LGALeader = yield LGA_AdminModel_1.default.findById((_a = req.body) === null || _a === void 0 ? void 0 : _a.LGA_AdminID);
         if (LGALeader) {
-            const stateAdminLGA = yield branchLeaderModel_1.default.findByIdAndUpdate(branchLeaderID, { verify: true }, { new: true });
+            const stateAdminLGA = yield branchLeaderModel_1.default.create(req.body);
             LGALeader.branchLeader.push(new mongoose_1.Types.ObjectId(stateAdminLGA === null || stateAdminLGA === void 0 ? void 0 : stateAdminLGA._id));
             LGALeader === null || LGALeader === void 0 ? void 0 : LGALeader.save();
             return res.status(201).json({
@@ -328,11 +330,12 @@ exports.bestPerformingUnit = bestPerformingUnit;
 const updateBranchProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { phone, bio, name } = req.body;
+        const { phone, bio, name, email } = req.body;
         const stateAdminLGA = yield branchLeaderModel_1.default.findByIdAndUpdate(id, {
             phone,
             bio,
             name,
+            email,
         }, { new: true });
         return res.status(200).json({
             message: "viewing stateAdminLGA record",

@@ -20,7 +20,7 @@ const router: any = Router();
 router.route("/create-branch-leader/:LGALeaderID").post(createBranchLeader);
 router.route("/login").post(loginBranch);
 
-router.route("/verify-branch-leader/:branchLeaderID").get(verifyBranchLeader);
+router.route("/verify-branch-leader/").post(verifyBranchLeader);
 
 router.route("/all-branches").get(viewTotalBranches);
 router.route("/branch-driver-operation/:branchID").get(branchDriversOpration);

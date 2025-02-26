@@ -6,7 +6,7 @@ const multer_1 = require("../utils/multer");
 const router = (0, express_1.Router)();
 router.route("/create-branch-leader/:LGALeaderID").post(branchLeaderController_1.createBranchLeader);
 router.route("/login").post(branchLeaderController_1.loginBranch);
-router.route("/verify-branch-leader/:branchLeaderID").get(branchLeaderController_1.verifyBranchLeader);
+router.route("/verify-branch-leader/").post(branchLeaderController_1.verifyBranchLeader);
 router.route("/all-branches").get(branchLeaderController_1.viewTotalBranches);
 router.route("/branch-driver-operation/:branchID").get(branchLeaderController_1.branchDriversOpration);
 router.route("/branch-cost-outcome/:branchID").get(branchLeaderController_1.outComeCost);

@@ -16,10 +16,10 @@ import { fileUpload } from "../utils/multer";
 
 const router: any = Router();
 
-router.route("/create-member-leader/:unitLeaderID").post(createMember);
+router.route("/create-member/:unitLeaderID").post(createMember);
 router.route("/login").post(loginMember);
 
-router.route("/verify-member-leader/:memberID").get(verifyMember);
+router.route("/verify-member/").post(verifyMember);
 
 router.route("/member-payment-with-id/:memberID").get(makePaymentMembers);
 router.route("/member-payment/").post(makePaymentWithMembersID);

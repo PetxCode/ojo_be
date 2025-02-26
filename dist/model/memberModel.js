@@ -5,6 +5,12 @@ const memberModel = new mongoose_1.Schema({
     name: {
         type: String,
     },
+    bio: {
+        type: String,
+    },
+    phone: {
+        type: String,
+    },
     email: {
         type: String,
     },

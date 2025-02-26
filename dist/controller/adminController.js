@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserAvatar = exports.updateAdminProfile = exports.bestPerformingUnitFromAmdn = exports.loginAdmin = exports.viewStateAdminViewLGA = exports.viewStateAdminStatus = exports.verifyStateAdmin = exports.createStateAdmin = void 0;
+exports.monthlyPerformance = exports.updateUserAvatar = exports.updateAdminProfile = exports.bestPerformingUnitFromAmdn = exports.loginAdmin = exports.viewStateAdminViewLGA = exports.viewStateAdminStatus = exports.verifyStateAdmin = exports.createStateAdmin = void 0;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const adminModel_1 = __importDefault(require("../model/adminModel"));
 const email_1 = require("../utils/email");
@@ -284,11 +284,12 @@ exports.bestPerformingUnitFromAmdn = bestPerformingUnitFromAmdn;
 const updateAdminProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { stateAdminID } = req.params;
-        const { phone, bio, name } = req.body;
+        const { phone, bio, name, email } = req.body;
         const stateAdminLGA = yield adminModel_1.default.findByIdAndUpdate(stateAdminID, {
             phone,
             bio,
             name,
+            email,
         }, { new: true });
         return res.status(200).json({
             message: "viewing stateAdminLGA record",
@@ -344,3 +345,26 @@ const updateUserAvatar = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.updateUserAvatar = updateUserAvatar;
+const monthlyPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { adminID } = req.params;
+        const getUser = yield adminModel_1.default.findById(adminID).populate({
+            path: "LGA_Admin",
+        });
+        for (let i of getUser === null || getUser === void 0 ? void 0 : getUser.LGA_Admin) {
+            const LGA = yield LGA_AdminModel_1.default.findById(i);
+            console.log(LGA);
+        }
+        return res.status(201).json({
+            message: "User update successfully",
+            data: getUser,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res
+            .status(400) // Changed to 400 for a more appropriate error status
+            .json({ message: "User not update", error: error.message });
+    }
+});
+exports.monthlyPerformance = monthlyPerformance;

@@ -13,6 +13,9 @@ import {
   bestPerformingUnitFormLGA,
   updateLGAProfile,
   updateLGAAvatar,
+  LGAbranchOperation,
+  LGAdailyPerformanceLGA,
+  unitMembersLGA,
 } from "../controller/LGAController";
 import { fileUpload } from "../utils/multer";
 
@@ -34,7 +37,11 @@ router.route("/view-lga-leader-status/:LGALeaderID").get(viewLGALeaderStatus);
 
 router.route("/view-lga-leader-branch/:LGALeaderID").get(viewLGABranches);
 
+router.route("/view-branch-daily-data/:LGAID").get(LGAdailyPerformanceLGA);
+router.route("/view-branch-daily/:LGAID").get(LGAbranchOperation);
+
 router.route("/view-lga-leader/:LGAID").get(viewLGADetails);
+router.route("/view-lga-from-unit/:LGAID").get(unitMembersLGA);
 
 router.route("/update-lga-info/:id").patch(updateLGAProfile);
 router.route("/update-lga-avatar/:id").patch(fileUpload, updateLGAAvatar);

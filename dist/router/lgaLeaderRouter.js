@@ -14,7 +14,10 @@ router.route("/lga-driver-operation/:lgaID").get(LGAController_1.LGADriversOprat
 router.route("/best-performing-lga-unit/:LGAID").get(LGAController_1.bestPerformingUnitFormLGA);
 router.route("/view-lga-leader-status/:LGALeaderID").get(LGAController_1.viewLGALeaderStatus);
 router.route("/view-lga-leader-branch/:LGALeaderID").get(LGAController_1.viewLGABranches);
+router.route("/view-branch-daily-data/:LGAID").get(LGAController_1.LGAdailyPerformanceLGA);
+router.route("/view-branch-daily/:LGAID").get(LGAController_1.LGAbranchOperation);
 router.route("/view-lga-leader/:LGAID").get(LGAController_1.viewLGADetails);
+router.route("/view-lga-from-unit/:LGAID").get(LGAController_1.unitMembersLGA);
 router.route("/update-lga-info/:id").patch(LGAController_1.updateLGAProfile);
 router.route("/update-lga-avatar/:id").patch(multer_1.fileUpload, LGAController_1.updateLGAAvatar);
 exports.default = router;

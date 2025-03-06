@@ -13,6 +13,15 @@ router
     .route("/best-performing-admin-unit/:adminID")
     .get(adminController_1.bestPerformingUnitFromAmdn);
 router.route("/monthly-performance/:adminID").get(adminController_1.monthlyPerformance);
+router
+    .route("/admin-monthly-performance/:adminID")
+    .get(adminController_1.monthlyPerformanceAdmin);
+router
+    .route("/admin-daily-performance-cost/:adminID")
+    .get(adminController_1.dailyPerformanceAdmin);
+router.route("/branch-daily-performance-cost/:adminID").get(adminController_1.branchOperation);
 router.route("/view-admin-status/:stateAdminID").get(adminController_1.viewStateAdminStatus);
 router.route("/view-admin-lga/:stateAdminID").get(adminController_1.viewStateAdminViewLGA);
+router.route("/view-all-member/").get(adminController_1.viewingMembers);
 exports.default = router;
+// branchOperation;

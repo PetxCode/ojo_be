@@ -391,6 +391,50 @@ export const updateUserAvatar = async (req: any, res: Response) => {
   }
 };
 
+export const monthlyPerformanceAdmin = async (req: any, res: Response) => {
+  try {
+    const { adminID } = req.params;
+
+    const getUser: any = await adminModel.findById(adminID).populate({
+      path: "LGA_Admin",
+    });
+
+    let operate: any = [];
+
+    for (let i of getUser?.LGA_Admin) {
+      const LGA: any = await LGA_AdminModel.findById(i);
+      operate = [...operate, ...LGA?.operation];
+    }
+
+    const sumByMonth = _.groupBy(operate.flat(), (item: any) => {
+      return moment(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+        ? moment(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM")
+        : moment(item.time).format("YYYY-MM");
+    });
+
+    const monthlySums = _.mapValues(sumByMonth, (group) => {
+      return _.sumBy(group, "cost");
+    });
+
+    const monthlySumsArray = Object.entries(monthlySums).map(
+      ([month, cost]) => ({
+        month,
+        cost,
+      })
+    );
+
+    return res.status(201).json({
+      message: "User update successfully",
+      data: monthlySumsArray,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res
+      .status(400) // Changed to 400 for a more appropriate error status
+      .json({ message: "User not update", error: error.message });
+  }
+};
+
 export const monthlyPerformance = async (req: any, res: Response) => {
   try {
     const { adminID } = req.params;
@@ -413,5 +457,211 @@ export const monthlyPerformance = async (req: any, res: Response) => {
     return res
       .status(400) // Changed to 400 for a more appropriate error status
       .json({ message: "User not update", error: error.message });
+  }
+};
+
+export const dailyPerformanceAdmin = async (req: any, res: Response) => {
+  try {
+    const { adminID } = req.params;
+
+    const getUser: any = await adminModel.findById(adminID).populate({
+      path: "LGA_Admin",
+    });
+
+    let operate: any = [];
+
+    for (let i of getUser?.LGA_Admin) {
+      const LGA: any = await LGA_AdminModel.findById(i);
+      operate = [...operate, ...LGA?.operation];
+    }
+
+    const sumByMonth = _.groupBy(operate.flat(), (item: any) => {
+      return moment(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+        ? moment(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM-DD")
+        : moment(item.time).format("YYYY-MM-DD");
+    });
+
+    const monthlySums = _.mapValues(sumByMonth, (group) => {
+      return _.sumBy(group, "cost");
+    });
+
+    const monthlySumsArray = Object.entries(monthlySums).map(
+      ([month, cost]) => ({
+        month,
+        cost,
+      })
+    );
+
+    const breakTotal: any = monthlySumsArray
+      .slice(0, 6)
+      .map((el) => el.cost)
+      .reduce((a: any, b: any) => a + b);
+
+    const breakData: any = monthlySumsArray.slice(0, 6).map((el) => {
+      return {
+        date: el.month,
+        cost: el.cost,
+        percent: (el.cost / breakTotal) * 100,
+      };
+    });
+
+    return res.status(201).json({
+      message: "User update successfully",
+      data: breakData,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res
+      .status(400) // Changed to 400 for a more appropriate error status
+      .json({ message: "User not update", error: error.message });
+  }
+};
+
+export const branchOperation = async (req: any, res: Response) => {
+  try {
+    const { adminID } = req.params;
+
+    const getUser: any = await adminModel.findById(adminID).populate({
+      path: "LGA_Admin",
+    });
+
+    let operate: any = [];
+
+    for (let i of getUser?.LGA_Admin) {
+      const LGA: any = await LGA_AdminModel.findById(i);
+      operate = [...operate, ...LGA?.operation];
+    }
+
+    const sumByMonth = _.groupBy(operate.flat(), (item: any) => {
+      return moment(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+        ? moment(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM-DD")
+        : moment(item.time).format("YYYY-MM-DD");
+    });
+
+    const monthlySums = _.mapValues(sumByMonth, (group) => {
+      return {
+        cost: _.sumBy(group, "cost"),
+        branchLeaderID: group[0]?.branchLeaderID,
+        branchLeader: group[0]?.branchLeader,
+      };
+    });
+
+    const monthlySumsArray = Object.entries(monthlySums).map(
+      ([month, data]) => ({
+        month,
+        ...data,
+      })
+    );
+
+    const breakTotal: any = monthlySumsArray
+      .sort((a: any, b: any) => a.cost + b.cost)
+      .slice(0, 4)
+      .map((el) => el.cost)
+      .reduce((a: any, b: any) => a + b);
+
+    const breakData: any = monthlySumsArray
+      .sort((a: any, b: any) => a.cost + b.cost)
+      .slice(0, 4)
+      .map((el) => {
+        return {
+          date: el.month,
+          cost: el.cost,
+          branchLeaderID: el?.branchLeaderID,
+          branchLeader: el?.branchLeader,
+          percent: (el.cost / breakTotal) * 100,
+        };
+      });
+
+    return res.status(201).json({
+      message: "User update successfully",
+      data: breakData,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res
+      .status(400) // Changed to 400 for a more appropriate error status
+      .json({ message: "User not update", error: error.message });
+  }
+};
+
+// export const branchOperation = async (req: any, res: Response) => {
+//   try {
+//     const { adminID } = req.params;
+
+//     const getUser: any = await adminModel.findById(adminID).populate({
+//       path: "LGA_Admin",
+//     });
+
+//     let operate: any = [];
+//     let operateII: any = [];
+
+//     for (let i of getUser?.LGA_Admin) {
+//       const LGA: any = await LGA_AdminModel.findById(i);
+//       operateII = [...operateII, LGA?.branchLeader].flat();
+//     }
+
+//     for (let i of operateII) {
+//       const LGA: any = await branchLeaderModel.findById(i);
+//       operate = [...operate, LGA?.operation].flat();
+//     }
+
+//     const sumByMonth = _.groupBy(operate.flat(), "branchLeaderID");
+
+//     const monthlySums = _.mapValues(sumByMonth, (group) => {
+//       return _.sumBy(group, "cost");
+//     });
+
+//     const monthlySumsArray = Object.entries(monthlySums).map(
+//       ([month, cost]) => ({
+//         month,
+//         cost,
+//       })
+//     );
+
+//     const breakTotal: any = monthlySumsArray
+//       .sort((a: any, b: any) => a.cost + b.cost)
+//       .map((el: any) => {
+//         return {
+//           id: el.month,
+//           cost: el.cost,
+//           branchLeader: el?.branchLeader,
+//           branchLeaderID: el?.branchLeaderID,
+//         };
+//       });
+
+//     const breakData: any = monthlySumsArray.slice(0, 6);
+
+//     return res.status(201).json({
+//       message: "User update successfully",
+//       main: breakTotal,
+//       data: breakData,
+//       status: 201,
+//     });
+//   } catch (error: any) {
+//     return res
+//       .status(400) // Changed to 400 for a more appropriate error status
+//       .json({ message: "User not update", error: error.message });
+//   }
+// };
+
+export const viewingMembers = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const { stateAdminID } = req.params;
+    const { phone, bio, name, email } = req.body;
+
+    const members = await memberModel.find();
+
+    return res.status(200).json({
+      message: "viewing members record",
+      data: members,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error verifying stateAdminLGA",
+    });
   }
 };

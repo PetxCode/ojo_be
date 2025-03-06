@@ -518,3 +518,244 @@ export const updateLGAAvatar = async (req: any, res: Response) => {
       .json({ message: "User not update", error: error.message });
   }
 };
+
+export const dailyPerformanceLGA = async (req: any, res: Response) => {
+  try {
+    const { adminID } = req.params;
+
+    const getUser: any = await LGA_AdminModel.findById(adminID).populate({
+      path: "branchLeader",
+    });
+
+    let operate: any = [];
+
+    for (let i of getUser?.LGA_Admin) {
+      const LGA: any = await branchLeaderModel.findById(i);
+      operate = [...operate, ...LGA?.operation];
+    }
+
+    const sumByMonth = _.groupBy(operate.flat(), (item: any) => {
+      return moment(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+        ? moment(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM-DD")
+        : moment(item.time).format("YYYY-MM-DD");
+    });
+
+    const monthlySums = _.mapValues(sumByMonth, (group) => {
+      return _.sumBy(group, "cost");
+    });
+
+    const monthlySumsArray = Object.entries(monthlySums).map(
+      ([month, cost]) => ({
+        month,
+        cost,
+      })
+    );
+
+    const breakTotal: any = monthlySumsArray
+      .slice(0, 6)
+      .map((el) => el.cost)
+      .reduce((a: any, b: any) => a + b);
+
+    const breakData: any = monthlySumsArray.slice(0, 6).map((el) => {
+      return {
+        date: el.month,
+        cost: el.cost,
+        percent: (el.cost / breakTotal) * 100,
+      };
+    });
+
+    return res.status(201).json({
+      message: "User update successfully",
+      data: breakData,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res
+      .status(400) // Changed to 400 for a more appropriate error status
+      .json({ message: "User not update", error: error.message });
+  }
+};
+
+export const LGAbranchOperation = async (req: any, res: Response) => {
+  try {
+    const { LGAID } = req.params;
+
+    const getUser: any = await LGA_AdminModel.findById(LGAID);
+
+    let operate: any = [];
+
+    for (let i of getUser?.branchLeader) {
+      const LGA: any = await branchLeaderModel.findById(i);
+      operate = [...operate, ...LGA?.operation];
+    }
+
+    const sumByMonth = _.groupBy(operate.flat(), (item: any) => {
+      return moment(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+        ? moment(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM-DD")
+        : moment(item.time).format("YYYY-MM-DD");
+    });
+
+    const monthlySums = _.mapValues(sumByMonth, (group) => {
+      return {
+        cost: _.sumBy(group, "cost"),
+        branchLeaderID: group[0]?.branchLeaderID,
+        branchLeader: group[0]?.branchLeader,
+      };
+    });
+
+    const monthlySumsArray = Object.entries(monthlySums).map(
+      ([month, data]) => ({
+        month,
+        ...data,
+      })
+    );
+
+    const breakTotal: any = monthlySumsArray
+      .sort((a: any, b: any) => a.cost + b.cost)
+      .slice(0, 4)
+      .map((el) => el.cost)
+      .reduce((a: any, b: any) => a + b);
+
+    const breakData: any = monthlySumsArray
+      .sort((a: any, b: any) => a.cost + b.cost)
+      .slice(0, 4)
+      .map((el) => {
+        return {
+          date: el.month,
+          cost: el.cost,
+          branchLeaderID: el?.branchLeaderID,
+          branchLeader: el?.branchLeader,
+          percent: (el.cost / breakTotal) * 100,
+        };
+      });
+
+    return res.status(201).json({
+      message: "User update successfully",
+      data: breakData,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res
+      .status(400) // Changed to 400 for a more appropriate error status
+      .json({ message: "User not update", error: error.message });
+  }
+};
+
+export const LGAdailyPerformanceLGA = async (req: any, res: Response) => {
+  try {
+    const { LGAID } = req.params;
+
+    const getUser: any = await LGA_AdminModel.findById(LGAID);
+    let operate: any = [];
+
+    for (let i of getUser?.branchLeader) {
+      const LGA: any = await branchLeaderModel.findById(i);
+      operate = [...operate, ...LGA?.operation];
+    }
+
+    const sumByMonth = _.groupBy(operate.flat(), (item: any) => {
+      return moment(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+        ? moment(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM-DD")
+        : moment(item.time).format("YYYY-MM-DD");
+    });
+
+    const monthlySums = _.mapValues(sumByMonth, (group) => {
+      return _.sumBy(group, "cost");
+    });
+
+    const monthlySumsArray = Object.entries(monthlySums).map(
+      ([month, cost]) => ({
+        month,
+        cost,
+      })
+    );
+
+    const breakTotal: any = monthlySumsArray
+      .slice(0, 6)
+      .map((el) => el.cost)
+      .reduce((a: any, b: any) => a + b);
+
+    const breakData: any = monthlySumsArray.slice(0, 6).map((el) => {
+      return {
+        date: el.month,
+        cost: el.cost,
+        percent: (el.cost / breakTotal) * 100,
+      };
+    });
+
+    return res.status(201).json({
+      message: "User update successfully",
+      data: breakData,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res
+      .status(400) // Changed to 400 for a more appropriate error status
+      .json({ message: "User not update", error: error.message });
+  }
+};
+
+export const unitMembersLGA = async (req: any, res: Response) => {
+  try {
+    const { LGAID } = req.params;
+
+    const getUser: any = await LGA_AdminModel.findById(LGAID);
+    let operate: any = [];
+    let operateUnit: any = [];
+
+    console.log(getUser);
+
+    for (let i of getUser?.branchLeader) {
+      const LGA: any = await branchLeaderModel.findById(i);
+      operateUnit = [...operateUnit, ...LGA?.unitLeader].flat();
+    }
+
+    for (let i of operateUnit) {
+      const LGA: any = await unitLeaderModel.findById(i);
+      operate = [...operate, ...LGA?.operation];
+    }
+
+    const sumByMonth = _.groupBy(operate.flat(), (item: any) => {
+      return moment(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+        ? moment(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM-DD")
+        : moment(item.time).format("YYYY-MM-DD");
+    });
+
+    const monthlySums = _.mapValues(sumByMonth, (group) => {
+      return {
+        cost: _.sumBy(group, "cost"),
+        unitLeaderID: group[0]?.unitLeaderID,
+        unitLeader: group[0]?.unitLeader,
+      };
+    });
+
+    const monthlySumsArray = Object.entries(monthlySums).map(
+      ([month, data]) => ({
+        month,
+        ...data,
+      })
+    );
+
+    const breakData: any = monthlySumsArray
+      .slice(0, 6)
+      .sort((a: any, b: any) => a + b)
+      .map((el) => {
+        return {
+          unitLeaderID: el?.unitLeaderID,
+          unitLeader: el?.unitLeader,
+          date: el.month,
+          cost: el.cost,
+        };
+      });
+
+    return res.status(201).json({
+      message: "User update successfully",
+      data: breakData,
+      status: 201,
+    });
+  } catch (error: any) {
+    return res
+      .status(400) // Changed to 400 for a more appropriate error status
+      .json({ message: "User not update", error: error.message });
+  }
+};

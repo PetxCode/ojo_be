@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.monthlyPerformance = exports.updateUserAvatar = exports.updateAdminProfile = exports.bestPerformingUnitFromAmdn = exports.loginAdmin = exports.viewStateAdminViewLGA = exports.viewStateAdminStatus = exports.verifyStateAdmin = exports.createStateAdmin = void 0;
+exports.viewingMembers = exports.branchOperation = exports.dailyPerformanceAdmin = exports.monthlyPerformance = exports.monthlyPerformanceAdmin = exports.updateUserAvatar = exports.updateAdminProfile = exports.bestPerformingUnitFromAmdn = exports.loginAdmin = exports.viewStateAdminViewLGA = exports.viewStateAdminStatus = exports.verifyStateAdmin = exports.createStateAdmin = void 0;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const adminModel_1 = __importDefault(require("../model/adminModel"));
 const email_1 = require("../utils/email");
@@ -345,6 +345,42 @@ const updateUserAvatar = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.updateUserAvatar = updateUserAvatar;
+const monthlyPerformanceAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { adminID } = req.params;
+        const getUser = yield adminModel_1.default.findById(adminID).populate({
+            path: "LGA_Admin",
+        });
+        let operate = [];
+        for (let i of getUser === null || getUser === void 0 ? void 0 : getUser.LGA_Admin) {
+            const LGA = yield LGA_AdminModel_1.default.findById(i);
+            operate = [...operate, ...LGA === null || LGA === void 0 ? void 0 : LGA.operation];
+        }
+        const sumByMonth = lodash_1.default.groupBy(operate.flat(), (item) => {
+            return (0, moment_1.default)(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+                ? (0, moment_1.default)(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM")
+                : (0, moment_1.default)(item.time).format("YYYY-MM");
+        });
+        const monthlySums = lodash_1.default.mapValues(sumByMonth, (group) => {
+            return lodash_1.default.sumBy(group, "cost");
+        });
+        const monthlySumsArray = Object.entries(monthlySums).map(([month, cost]) => ({
+            month,
+            cost,
+        }));
+        return res.status(201).json({
+            message: "User update successfully",
+            data: monthlySumsArray,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res
+            .status(400) // Changed to 400 for a more appropriate error status
+            .json({ message: "User not update", error: error.message });
+    }
+});
+exports.monthlyPerformanceAdmin = monthlyPerformanceAdmin;
 const monthlyPerformance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { adminID } = req.params;
@@ -368,3 +404,172 @@ const monthlyPerformance = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.monthlyPerformance = monthlyPerformance;
+const dailyPerformanceAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { adminID } = req.params;
+        const getUser = yield adminModel_1.default.findById(adminID).populate({
+            path: "LGA_Admin",
+        });
+        let operate = [];
+        for (let i of getUser === null || getUser === void 0 ? void 0 : getUser.LGA_Admin) {
+            const LGA = yield LGA_AdminModel_1.default.findById(i);
+            operate = [...operate, ...LGA === null || LGA === void 0 ? void 0 : LGA.operation];
+        }
+        const sumByMonth = lodash_1.default.groupBy(operate.flat(), (item) => {
+            return (0, moment_1.default)(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+                ? (0, moment_1.default)(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM-DD")
+                : (0, moment_1.default)(item.time).format("YYYY-MM-DD");
+        });
+        const monthlySums = lodash_1.default.mapValues(sumByMonth, (group) => {
+            return lodash_1.default.sumBy(group, "cost");
+        });
+        const monthlySumsArray = Object.entries(monthlySums).map(([month, cost]) => ({
+            month,
+            cost,
+        }));
+        const breakTotal = monthlySumsArray
+            .slice(0, 6)
+            .map((el) => el.cost)
+            .reduce((a, b) => a + b);
+        const breakData = monthlySumsArray.slice(0, 6).map((el) => {
+            return {
+                date: el.month,
+                cost: el.cost,
+                percent: (el.cost / breakTotal) * 100,
+            };
+        });
+        return res.status(201).json({
+            message: "User update successfully",
+            data: breakData,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res
+            .status(400) // Changed to 400 for a more appropriate error status
+            .json({ message: "User not update", error: error.message });
+    }
+});
+exports.dailyPerformanceAdmin = dailyPerformanceAdmin;
+const branchOperation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { adminID } = req.params;
+        const getUser = yield adminModel_1.default.findById(adminID).populate({
+            path: "LGA_Admin",
+        });
+        let operate = [];
+        for (let i of getUser === null || getUser === void 0 ? void 0 : getUser.LGA_Admin) {
+            const LGA = yield LGA_AdminModel_1.default.findById(i);
+            operate = [...operate, ...LGA === null || LGA === void 0 ? void 0 : LGA.operation];
+        }
+        const sumByMonth = lodash_1.default.groupBy(operate.flat(), (item) => {
+            return (0, moment_1.default)(item.time, "dddd, MMMM D, YYYY h:mm A").isValid()
+                ? (0, moment_1.default)(item.time, "dddd, MMMM D, YYYY h:mm A").format("YYYY-MM-DD")
+                : (0, moment_1.default)(item.time).format("YYYY-MM-DD");
+        });
+        const monthlySums = lodash_1.default.mapValues(sumByMonth, (group) => {
+            var _a, _b;
+            return {
+                cost: lodash_1.default.sumBy(group, "cost"),
+                branchLeaderID: (_a = group[0]) === null || _a === void 0 ? void 0 : _a.branchLeaderID,
+                branchLeader: (_b = group[0]) === null || _b === void 0 ? void 0 : _b.branchLeader,
+            };
+        });
+        const monthlySumsArray = Object.entries(monthlySums).map(([month, data]) => (Object.assign({ month }, data)));
+        const breakTotal = monthlySumsArray
+            .sort((a, b) => a.cost + b.cost)
+            .slice(0, 4)
+            .map((el) => el.cost)
+            .reduce((a, b) => a + b);
+        const breakData = monthlySumsArray
+            .sort((a, b) => a.cost + b.cost)
+            .slice(0, 4)
+            .map((el) => {
+            return {
+                date: el.month,
+                cost: el.cost,
+                branchLeaderID: el === null || el === void 0 ? void 0 : el.branchLeaderID,
+                branchLeader: el === null || el === void 0 ? void 0 : el.branchLeader,
+                percent: (el.cost / breakTotal) * 100,
+            };
+        });
+        return res.status(201).json({
+            message: "User update successfully",
+            data: breakData,
+            status: 201,
+        });
+    }
+    catch (error) {
+        return res
+            .status(400) // Changed to 400 for a more appropriate error status
+            .json({ message: "User not update", error: error.message });
+    }
+});
+exports.branchOperation = branchOperation;
+// export const branchOperation = async (req: any, res: Response) => {
+//   try {
+//     const { adminID } = req.params;
+//     const getUser: any = await adminModel.findById(adminID).populate({
+//       path: "LGA_Admin",
+//     });
+//     let operate: any = [];
+//     let operateII: any = [];
+//     for (let i of getUser?.LGA_Admin) {
+//       const LGA: any = await LGA_AdminModel.findById(i);
+//       operateII = [...operateII, LGA?.branchLeader].flat();
+//     }
+//     for (let i of operateII) {
+//       const LGA: any = await branchLeaderModel.findById(i);
+//       operate = [...operate, LGA?.operation].flat();
+//     }
+//     const sumByMonth = _.groupBy(operate.flat(), "branchLeaderID");
+//     const monthlySums = _.mapValues(sumByMonth, (group) => {
+//       return _.sumBy(group, "cost");
+//     });
+//     const monthlySumsArray = Object.entries(monthlySums).map(
+//       ([month, cost]) => ({
+//         month,
+//         cost,
+//       })
+//     );
+//     const breakTotal: any = monthlySumsArray
+//       .sort((a: any, b: any) => a.cost + b.cost)
+//       .map((el: any) => {
+//         return {
+//           id: el.month,
+//           cost: el.cost,
+//           branchLeader: el?.branchLeader,
+//           branchLeaderID: el?.branchLeaderID,
+//         };
+//       });
+//     const breakData: any = monthlySumsArray.slice(0, 6);
+//     return res.status(201).json({
+//       message: "User update successfully",
+//       main: breakTotal,
+//       data: breakData,
+//       status: 201,
+//     });
+//   } catch (error: any) {
+//     return res
+//       .status(400) // Changed to 400 for a more appropriate error status
+//       .json({ message: "User not update", error: error.message });
+//   }
+// };
+const viewingMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { stateAdminID } = req.params;
+        const { phone, bio, name, email } = req.body;
+        const members = yield memberModel_1.default.find();
+        return res.status(200).json({
+            message: "viewing members record",
+            data: members,
+            status: 200,
+        });
+    }
+    catch (error) {
+        return res.status(404).json({
+            message: "Error verifying stateAdminLGA",
+        });
+    }
+});
+exports.viewingMembers = viewingMembers;
